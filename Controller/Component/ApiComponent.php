@@ -64,8 +64,6 @@ class ApiComponent extends Component {
 	* @return void
 	*/
 	public function startup(Controller $controller) {
-		$this->setup($controller);
-
 		// Enforce API authentication
 		$this->configureApiAccess();
 	}
