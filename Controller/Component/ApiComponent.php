@@ -109,6 +109,10 @@ class ApiComponent extends Component {
 	* @return void
 	*/
 	public function beforeRender(Controller $controller) {
+		if (!$this->controller) {
+			$this->setup($controller);
+		}
+
 		if (!$this->request->is('api')) {
 			return;
 		}
