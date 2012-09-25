@@ -238,6 +238,10 @@ class ApiComponent extends Component {
 	* @return void
 	*/
 	protected function configureApiAccess() {
+		if (isset($this->settings['auth']) && !$this->settings['auth']) {
+			return true;
+		}
+
 		if ($this->hasError()) {
 			return;
 		}
@@ -262,7 +266,7 @@ class ApiComponent extends Component {
 		}
 
 		// Do not enforce authentication if the request is already authenticated
-		if (isset($this->controller->Auth) && $this->controller->Auth->user()) {
+		if ($this->controller->Auth && $this->controller->Auth->user()) {
 			return;
 		}
 
