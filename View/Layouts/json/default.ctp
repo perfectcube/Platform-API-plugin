@@ -29,6 +29,11 @@ if (isset($this->Paginator) && $this->Paginator->defaultModel()) {
 	} else {
 		$pagination['next'] = false;
 	}
+
+	// Removing navigation links
+	if ($showNavigationLinks === false || $showNavigationLinks === 0) {
+		unset($pagination['prev'], $pagination['next']);
+	}
 }
 
 if (class_exists('ConnectionManager') && Configure::read('debug') > 1) {
