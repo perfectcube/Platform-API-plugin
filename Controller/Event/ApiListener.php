@@ -1,7 +1,7 @@
 <?php
-App::uses('CrudBaseEvent', 'Crud.Controller/Event');
+App::uses('CrudListener', 'Crud.Controller/Event');
 
-class ApiEvent extends CrudBaseEvent {
+class ApiListener extends CrudListener {
 
 	/**
 	 * Returns a list of all events that will fire in the controller during it's lifecycle.
