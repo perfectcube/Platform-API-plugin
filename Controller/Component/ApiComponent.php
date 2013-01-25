@@ -141,8 +141,8 @@ class ApiComponent extends Component {
 		$this->controller->set('apiAccessToken', $token);
 		$this->controller->set('allowJsonp', $this->allowJsonp);
 
-		$showNavigationLinks = isset($this->settings['showNavigationLinks']) ? $this->settings['showNavigationLinks'] : true;
-		$this->controller->set(compact('showNavigationLinks'));
+		$showPaginationLinks = isset($this->settings['showPaginationLinks']) ? $this->settings['showPaginationLinks'] : true;
+		$this->controller->set(compact('showPaginationLinks'));
 	}
 
 	/**

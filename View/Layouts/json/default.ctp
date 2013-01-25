@@ -30,7 +30,7 @@ if (isset($this->Paginator) && $this->Paginator->defaultModel()) {
 		$pagination['next'] = false;
 	}
 
-	if (!$showNavigationLinks) {
+	if (!$showPaginationLinks) {
 		unset($pagination['prev'], $pagination['next']);
 	}
 }
