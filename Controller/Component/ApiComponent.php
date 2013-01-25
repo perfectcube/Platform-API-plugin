@@ -140,6 +140,9 @@ class ApiComponent extends Component {
 		$token = ApiUtility::getRequestToken($this->request);
 		$this->controller->set('apiAccessToken', $token);
 		$this->controller->set('allowJsonp', $this->allowJsonp);
+
+		$showPaginationLinks = isset($this->settings['showPaginationLinks']) ? $this->settings['showPaginationLinks'] : true;
+		$this->controller->set(compact('showPaginationLinks'));
 	}
 
 	/**
