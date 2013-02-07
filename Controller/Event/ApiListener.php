@@ -65,11 +65,11 @@ class ApiListener extends CrudListener {
 	public function afterSave(CakeEvent $event) {
 		if ($event->subject->success) {
 			$model = $event->subject->model;
-			$event->subject->controller->set('data', array(
-				$model->alias => array(
-					$model->primaryKey => $event->subject->model->id
-				)
-			));
+			$controller = $event->subject->controller;
+
+			if (empty($controller->viewVars['data'])) {
+				$controller->set('data', array($model->alias => array($model->primaryKey => $event->subject->model->id)));
+			}
 
 			$response = $event->subject->controller->render();
 			$response->statusCode(201);
