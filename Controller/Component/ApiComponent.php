@@ -35,13 +35,6 @@ class ApiComponent extends Component {
 	protected $response;
 
 	/**
-	* List of actions that can be accessed without authentication
-	*
-	* @var array
-	*/
-	protected $publicActions = array();
-
-	/**
 	 * @var boolean
 	 */
 	protected $allowJsonp = false;
@@ -55,27 +48,6 @@ class ApiComponent extends Component {
 	public function initialize(Controller $controller) {
 		// Ensure we can detect API requests
 		$this->setup($controller);
-	}
-
-	/**
-	* startup method
-	*
-	* @param Controller $controller
-	* @return void
-	*/
-	public function startup(Controller $controller) {
-		// Enforce API authentication
-		$this->configureApiAccess();
-	}
-
-	/**
-	* Allow public access to an action
-	*
-	* @param string $action
-	* @return void
-	*/
-	public function allowPublic($action) {
-		$this->publicActions[] = $action;
 	}
 
 	/**
@@ -135,10 +107,6 @@ class ApiComponent extends Component {
 		// Override RequestHandler messing around with my layoutPaths
 		// If not set to null it may do json/json/default.ctp as layout in non-crud actions
 		$this->controller->layoutPath = null;
-
-		// Publish the token
-		$token = ApiUtility::getRequestToken($this->request);
-		$this->controller->set('apiAccessToken', $token);
 		$this->controller->set('allowJsonp', $this->allowJsonp);
 
 		$showPaginationLinks = isset($this->settings['showPaginationLinks']) ? $this->settings['showPaginationLinks'] : true;
@@ -233,58 +201,6 @@ class ApiComponent extends Component {
 
 		// Always repond as JSON
 		$this->controller->response->type('json');
-	}
-
-	/**
-	* Ensures that the current request is validated for Authentication
-	*
-	* @return void
-	*/
-	protected function configureApiAccess() {
-		if (isset($this->settings['auth']) && !$this->settings['auth']) {
-			return true;
-		}
-
-		if ($this->hasError()) {
-			return;
-		}
-
-		// Do not require authentication if the request isn't considered API
-		if (!$this->request->is('api')) {
-			return;
-		}
-
-		// If its a public action, do not enforce API security checks
-		if (in_array($this->controller->action, $this->publicActions)) {
-			return;
-		}
-
-		// If the user has a isAuthorizedApi method, call it and don't check anything else
-		if (method_exists($this->controller, 'isAuthorizedApi')) {
-			if (!$this->controller->isAuthorizedApi()) {
-				throw new ForbiddenException('Permission denied');
-			}
-
-			return;
-		}
-
-		// Do not enforce authentication if the request is already authenticated
-		if ($this->controller->Auth && $this->controller->Auth->user()) {
-			return;
-		}
-
-		// Get the access token, if any
-		$token = ApiUtility::getRequestToken($this->request);
-
-		// Deny access if no AccessToken is provided
-		if (empty($token)) {
-			throw new ForbiddenException('Permission denied, missing access token');
-		}
-
-		// Deny access if the AccessToken isn't valid
-		if (!$this->controller->Auth->login()) {
-			throw new ForbiddenException('Permission denied, invalid access token');
-		}
 	}
 
 	/**
