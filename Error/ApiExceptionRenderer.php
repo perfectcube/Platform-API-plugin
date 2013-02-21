@@ -13,7 +13,12 @@ class ApiExceptionRenderer extends ExceptionRenderer {
 		$url = $this->controller->request->here();
 		$code = $error->getCode();
 		$status = ($code >= 400 && $code < 506) ? $code : 412;
-		$this->controller->response->statusCode($status);
+		try {
+			$this->controller->response->statusCode($status);
+		} catch(Exception $e) {
+			$this->controller->response->statusCode(412);
+		}
+
 		$this->controller->set(array(
 			'code' => $code,
 			'url' => h($url),
