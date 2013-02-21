@@ -42,7 +42,7 @@ class ValidationException extends CakeException {
 					continue;
 				}
 
-				$this->message = sprintf('%s.%s Error : %s', $model, $field, $error);
+				$this->message = sprintf('%s.%s : %s', $model, $field, $error);
 				if (!empty($rule['code'])) {
 					$code = $rule['code'];
 				}
