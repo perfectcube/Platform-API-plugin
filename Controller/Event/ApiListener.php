@@ -1,5 +1,6 @@
 <?php
 App::uses('CrudListener', 'Crud.Controller/Event');
+App::uses('ValidationException', 'Api.Error/Exception');
 
 class ApiListener extends CrudListener {
 
@@ -75,6 +76,11 @@ class ApiListener extends CrudListener {
 			$response->statusCode(201);
 			$response->header('Location', \Router::url(array('action' => 'view', $event->subject->id), true));
 		} else {
+			$errors = $this->_validationErrors();
+			if ($errors) {
+				throw new ValidationException($errors);
+			}
+
 			$response = $event->subject->controller->render();
 			$response->statusCode(400);
 		}
@@ -96,4 +102,23 @@ class ApiListener extends CrudListener {
 	public function invalidId(CakeEvent $event) {
 		throw new \NotFoundException('Invalid id specified');
 	}
+
+	protected function _validationErrors() {
+		$errors = array();
+
+		$models = ClassRegistry::keys();
+		foreach ($models as $model) {
+			$instance = ClassRegistry::getObject($model);
+			if (!is_a($instance, 'Model')) {
+				continue;
+			}
+
+			if ($instance->validationErrors) {
+				$errors[$instance->alias] = $instance->validationErrors;
+			}
+		}
+
+		return $errors;
+	}
+
 }
