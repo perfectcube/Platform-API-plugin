@@ -1,6 +1,6 @@
 <?php
 App::uses('ApiUtility', 'Api.Lib');
-App::uses('ApiEvent', 'Api.Controller/Event');
+App::uses('ApiListener', 'Api.Controller/Event');
 
 /**
  * API component
@@ -64,8 +64,6 @@ class ApiComponent extends Component {
 	* @return void
 	*/
 	public function startup(Controller $controller) {
-		$this->setup($controller);
-
 		// Enforce API authentication
 		$this->configureApiAccess();
 	}
@@ -111,6 +109,10 @@ class ApiComponent extends Component {
 	* @return void
 	*/
 	public function beforeRender(Controller $controller) {
+		if (!$this->controller) {
+			$this->setup($controller);
+		}
+
 		if (!$this->request->is('api')) {
 			return;
 		}
@@ -138,6 +140,9 @@ class ApiComponent extends Component {
 		$token = ApiUtility::getRequestToken($this->request);
 		$this->controller->set('apiAccessToken', $token);
 		$this->controller->set('allowJsonp', $this->allowJsonp);
+
+		$showPaginationLinks = isset($this->settings['showPaginationLinks']) ? $this->settings['showPaginationLinks'] : true;
+		$this->controller->set(compact('showPaginationLinks'));
 	}
 
 	/**
@@ -215,7 +220,7 @@ class ApiComponent extends Component {
 		}
 
 		// Bind Crud Event Api
-		$this->controller->getEventManager()->attach(new ApiEvent());
+		$this->controller->getEventManager()->attach(new ApiListener());
 
 		// Copy publicActions from the controller if set and no actions has been defined already
 		// @todo: This is legacy, remove it
@@ -236,6 +241,10 @@ class ApiComponent extends Component {
 	* @return void
 	*/
 	protected function configureApiAccess() {
+		if (isset($this->settings['auth']) && !$this->settings['auth']) {
+			return true;
+		}
+
 		if ($this->hasError()) {
 			return;
 		}
@@ -260,7 +269,7 @@ class ApiComponent extends Component {
 		}
 
 		// Do not enforce authentication if the request is already authenticated
-		if (isset($this->controller->Auth) && $this->controller->Auth->user()) {
+		if ($this->controller->Auth && $this->controller->Auth->user()) {
 			return;
 		}
 

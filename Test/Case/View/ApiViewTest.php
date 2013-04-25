@@ -213,4 +213,108 @@ class ApiViewTest extends CakeTestCase {
 		$expected = 'APP/Plugin/Api/View/json/fallback_template.ctp';
 		$this->assertSame($expected, $path);
 	}
+
+/**
+ * testRenderIndex
+ *
+ * Fake rendering a paginated index - verify response format
+ */
+	public function testRenderIndex() {
+		$this->View->viewVars = array(
+			'success' => true,
+			'data' => array(
+				array('one'),
+				array('two'),
+				array('three')
+			),
+			'pagination' => array(
+				'pageCount' => 1,
+				'current' => 1,
+				'count' => 1,
+				'prev' => 'Some url',
+				'next' => 'Some other url'
+			),
+			'allowJsonp' => true
+		);
+
+		$debug = Configure::read('debug');
+		Configure::write('debug', 0);
+		$return = $this->View->render('index', 'Api.json/default');
+		Configure::write('debug', $debug);
+
+		$return = json_decode($return, true);
+		$this->assertTrue((bool)$return, "Response was not valid json");
+		$expected = array(
+			'success' => true,
+			'data' => array(
+				array('one'),
+				array('two'),
+				array('three')
+			),
+			'pagination' => array(
+				'pageCount' => 1,
+				'current' => 1,
+				'count' => 1,
+				'prev' => 'Some url',
+				'next' => 'Some other url'
+			)
+		);
+		$this->assertSame($expected, $return);
+	}
+
+/**
+ * testRenderIndexNoPagination
+ *
+ * Fake rendering a paginated index - verify that having passed "showPaginationLinks" as false works
+ */
+	public function testRenderIndexNoPagination() {
+		$this->View->viewVars = array(
+			'success' => true,
+			'data' => array(
+				array('one'),
+				array('two'),
+				array('three')
+			),
+			'pagination' => array(
+				'page' => 1,
+				'pageCount' => 1,
+				'current' => 1,
+				'count' => 1,
+				'prev' => 'Some url',
+				'next' => 'Some other url'
+			),
+			'allowJsonp' => true,
+			'showPaginationLinks' => false
+		);
+
+		$this->View->Paginator = $this->getMock('Helper', array('defaultModel', 'hasPrev', 'hasNext'));
+		$this->View->Paginator->expects($this->any())
+			->method('defaultModel')
+			->will($this->returnValue('Name'));
+
+		$this->View->Paginator->request = new Object();
+		$this->View->Paginator->request->paging['Name'] = $this->View->viewVars['pagination'];
+
+		$debug = Configure::read('debug');
+		Configure::write('debug', 0);
+		$return = $this->View->render('index', 'Api.json/default');
+		Configure::write('debug', $debug);
+
+		$return = json_decode($return, true);
+		$this->assertTrue((bool)$return, "Response was not valid json");
+		$expected = array(
+			'success' => true,
+			'data' => array(
+				array('one'),
+				array('two'),
+				array('three')
+			),
+			'pagination' => array(
+				'pageCount' => 1,
+				'current' => 1,
+				'count' => 1
+			)
+		);
+		$this->assertSame($expected, $return);
+	}
 }
