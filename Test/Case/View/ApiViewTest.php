@@ -294,7 +294,7 @@ class ApiViewTest extends CakeTestCase {
 			'showPaginationLinks' => false
 		);
 
-		$this->View->Paginator = $this->getMock('Helper', array('defaultModel', 'hasPrev', 'hasNext'));
+		$this->View->Paginator = $this->getMock('Helper', array('defaultModel', 'hasPrev', 'hasNext'), array($this->View));
 		$this->View->Paginator->expects($this->any())
 			->method('defaultModel')
 			->will($this->returnValue('Name'));
