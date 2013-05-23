@@ -33,6 +33,13 @@ class TestApiView extends ApiView {
 class ApiViewPostsController extends Controller {
 
 /**
+ * Helpers to be used
+ *
+ * @var array
+ */
+	public $helpers = array('Api.JsonFormat');
+
+/**
  * name property
  *
  * @var string 'Posts'
@@ -317,4 +324,35 @@ class ApiViewTest extends CakeTestCase {
 		);
 		$this->assertSame($expected, $return);
 	}
+
+/**
+ * Testing real paths, is not exposed in exception trace
+ *
+ * @return void
+ */
+	public function testStripRealPaths() {
+		Configure::write('ResponseObject', $this->Controller->request);
+		$this->View->viewVars = array(
+			'success' => false,
+			'error' => new Exception('Test Exception'),
+			'_serialize' => array(), //@todo empty
+			'allowJsonp' => true
+		);
+
+		$debug = Configure::read('debug');
+		Configure::write('debug', 2);
+		$this->View->render('exception', 'Api.json/error');
+
+		$this->assertNotContains(WWW_ROOT, $this->View->viewVars['data']['trace']);
+		$this->assertNotContains(CAKE, $this->View->viewVars['data']['trace']);
+		$this->assertNotContains(APP, $this->View->viewVars['data']['trace']);
+		$this->assertNotContains(ROOT, $this->View->viewVars['data']['trace']);
+		$this->assertNotContains(WEBROOT_DIR, $this->View->viewVars['data']['trace']);
+
+		$this->assertContains('CAKE/', $this->View->viewVars['data']['trace']);
+		$this->assertContains('APP/', $this->View->viewVars['data']['trace']);
+
+		Configure::write('debug', $debug);
+	}
+
 }
