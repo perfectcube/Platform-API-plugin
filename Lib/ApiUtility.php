@@ -1,5 +1,6 @@
 <?php
 class ApiUtility {
+
 	protected function __construct() {
 
 	}

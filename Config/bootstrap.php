@@ -1,8 +1,7 @@
 <?php
 // Empty for now
 
-$HERE = App::path('Plugin', 'Api');
-
+$HERE = dirname(__FILE__);
 App::build(array(
-    'ApiPlug' => array('%s' . $HERE.'/Lib/Plugin' . DS)
+    'ApiPlug' => array($HERE.'/Lib/Plugin' . DS)
 ), App::REGISTER);
