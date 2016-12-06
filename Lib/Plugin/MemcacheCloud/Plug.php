@@ -6,8 +6,6 @@ App::uses('ProviderPlug','Api.Lib');
 */
 class MemcacheCloud extends ProviderPlug{
 	
-	private $log = array();
-	
  	public function check($options=''){
 		
 		$server = getenv('MEMCACHEDCLOUD_SERVERS');
@@ -128,7 +126,7 @@ class MemcacheCloud extends ProviderPlug{
 			);
 		}
 		
-		$status['log'] = $this->log; 
+		$this->appendLog($status);
 		
 		return $status;
 		
@@ -143,7 +141,7 @@ class MemcacheCloud extends ProviderPlug{
 		);
 	}
 	
-	private function getCont($code){
+	private function getStatusType($code){
 		$constant = array(
 			0 => 'Memcached::MEMCACHED_SUCCESS',
 			1 => 'Memcached::MEMCACHED_FAILURE',
@@ -200,12 +198,12 @@ class MemcacheCloud extends ProviderPlug{
 		$value = isset($constant[$code]) ? $constant[$code] : 'Memcached::UNKNOWN_ERROR_CODE';
 		return $value;
 	}
-	
-	private function logEvent($label,array $event){
+
+	protected function logEvent($label,array $event){
 		// extract the status label and append it to the event
-		$event['const'] = $this->getCont($event['code']);
+		$event['const'] = $this->getStatusType($event['code']);
 		// push the entry on the stack
-		$this->log[$label] = $event;
+        parent::logEvent($label,$event);
 	}
 	
 }

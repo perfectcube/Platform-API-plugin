@@ -72,7 +72,7 @@ class StatusController extends ApiAppController {
                         // call $Provider->check(); the plugin takes care of its own arguments
 						$data = $Plugin->check();
 						$status = 200;
-						$message = __('%s API Report',$class);
+						$message = __('%s Status Report',$class);
 					}
 					else{
 						$status = 500;
