@@ -3,5 +3,8 @@
 
 $HERE = dirname(__FILE__);
 App::build(array(
-    'ApiPlug' => array($HERE.'/Lib/Plugin' . DS)
+    'PluginApi' => array(
+		$HERE.'/Lib/Plugin/',
+		$HERE.'/Lib/'	
+	)
 ), App::REGISTER);
