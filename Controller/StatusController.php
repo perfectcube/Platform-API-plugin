@@ -26,7 +26,7 @@ App::uses('ProviderPlug', 'Api.Lib');
  */
 class StatusController extends ApiAppController {
 
-	// how many laevels has the arrayToTable reneerer recursed? we us this to only render a caption if the table has rendered one level deep or more
+	// how many levels has the arrayToTable renderer recursed? we us this to only render a caption if the table has rendered one level deep or more
 	private $render_flags = array(
 		'arraytotable'=>array(
 			'recursion'=>false,
