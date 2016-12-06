@@ -16,7 +16,22 @@ class Rediscloud extends ProviderPlug{
 		if ($have_pass) {
 			$redis->auth($pass);
 		}
-		$info = $redis->info();
+		$info['info'] = $redis->info();
+		$keys = $redis->keys('*');
+		$info['keys'] = $keys;
+		$have_keys = (
+		    is_array($keys)
+            && !empty($keys)
+        ) ? true : false;
+
+		if($have_keys){
+           foreach ($keys as $key){
+               $value = $redis->get($key);
+               $info[$key][] = $value;
+               // fixme: remove this debugging break so we can get all lines
+           }
+        }
+
 		return $info;
 	}
 	
