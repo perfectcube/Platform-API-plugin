@@ -13,8 +13,8 @@ class Rediscloud extends ProviderPlug{
 			'now' => $now,  
 		);
 		$entry = print_r($event,true);
-	    CakeLog::write('debug',"CakeLog::write() wrote: ".$entry);
-		error_log("error_log() wrote: ".$entry);
+	    CakeLog::write('debug',"CakeLog::write() wrote from api/status/check: ".$entry);
+		error_log("error_log() wrote rom api/status/check: ".$entry);
 		
         // $options += array();
         // default to connection failure as info
