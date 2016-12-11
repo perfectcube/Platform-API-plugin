@@ -6,8 +6,16 @@ App::uses('ProviderPlug','Api.Lib');
 */
 class Rediscloud extends ProviderPlug{
 	
- 	public function check($options='')
-    {
+ 	public function check($options=''){
+		
+		$now = CakeTime::niceShort(time());
+		$event = array(
+			'now' => $now,  
+		);
+		$entry = print_r($event,true);
+	    CakeLog::write('debug',"CakeLog::write() wrote: ".$entry);
+		error_log("error_log() wrote: ".$entry);
+		
         // $options += array();
         // default to connection failure as info
         $info['info'] = __('RedisCloud Connection Failed. Check your connection host, port, and password');
