@@ -6,24 +6,25 @@ App::uses('ProviderPlug','Api.Lib');
 */
 class Rediscloud extends ProviderPlug{
 	
- 	public function check($options=''){
- 	    // $options += array();
+ 	public function check($options='')
+    {
+        // $options += array();
         // default to connection failure as info
         $info['info'] = __('RedisCloud Connection Failed. Check your connection host, port, and password');
 
         $redis = new Redis();
-		$host = parse_url(getenv('REDISCLOUD_URL'), PHP_URL_HOST);
-		$port = parse_url(getenv('REDISCLOUD_URL'), PHP_URL_PORT);
-		$pass = parse_url(getenv('REDISCLOUD_URL'), PHP_URL_PASS);
-		$connected = $redis->connect($host, $port);
+        $host = parse_url(getenv('REDISCLOUD_URL'), PHP_URL_HOST);
+        $port = parse_url(getenv('REDISCLOUD_URL'), PHP_URL_PORT);
+        $pass = parse_url(getenv('REDISCLOUD_URL'), PHP_URL_PASS);
+        $connected = $redis->connect($host, $port);
 
-		if($connected){
+        if ($connected) {
 
             $have_pass = !is_array($pass) ? true : false;
             if ($have_pass) {
                 $info['info'] = __('RedisCloud Login Failed. Check your connection password');
                 $logged_in = $redis->auth($pass);
-                if($logged_in){
+                if ($logged_in) {
                     //  get the server info
                     $info['info'] = $redis->info();
 
@@ -31,36 +32,44 @@ class Rediscloud extends ProviderPlug{
                     $now = microtime(true);
                     $string_value = md5($now);
                     $test_key = 'api:check:string';
-                    $could_set = $redis->set($test_key,$string_value);
-                    $this->logEvent(__('Set key [%s] with value [%s]',$test_key,$string_value),array(
-                        'result'=>$could_set
-                    ));
+                    $could_set = $redis->set($test_key, $string_value);
+                    if (!$could_set) {
+                        $this->logEvent(__('Redis::set() Failed', $test_key), array(
+                            'result' => __('$redis->set("%s") returned [%s]', $string_value, $could_set)
+                        ));
+                    }
+
                     // read a value form the database
                     $retrieved_value = $redis->get($test_key);
-                    $this->logEvent(__('Retrieved value [%s] from keystore with key [%s]',$retrieved_value,$test_key),array(
-                        'retrieved'=>$retrieved_value
+
+                    $string_retrival_failure = ($retrieved_value != $string_value) ? true : false;
+                    $message = __('String retrival using key [%s] failed. Expected [%s] but got [%s]', $test_key, $string_value, $retrieved_value);
+                    if (!$string_retrival_failure) {
+                        $message = __("String retrieval of value [%s] worked", $retrieved_value);
+                    }
+                    $this->logEvent(__('Redis::set() => Redis::get()'), array(
+                        'Message' => $message
                     ));
 
                     // get all available keys
                     $keys = $redis->keys('*');
-                    $info['keys'] = $keys;
+                    $info['Have Keys'] = $keys;
                     $have_keys = (
                         is_array($keys)
                         && !empty($keys)
                     ) ? true : false;
                     // if you have keys then get their values
-                    if($have_keys){
-                        foreach ($keys as $key){
+                    if ($have_keys) {
+                        foreach ($keys as $key) {
                             $value = $redis->get($key);
-                            $info[$key][] = $value;
-                            // fixme: remove this debugging break so we can get all lines
+                            $info['Have Values'][$key] = $value;
                         }
                     }
 
                     // delete all test keys from the database
                     $deleted_count = $redis->delete($test_key);
-                    $this->logEvent(__('Deleting test key [%s]',$test_key),array(
-                       'keys_deleted'=>$deleted_count
+                    $this->logEvent(__('Key Delete'), array(
+                        'keys_deleted' => __('test key [%s] deletion [%s]', $test_key, $deleted_count)
                     ));
 
                     $this->appendLog($info);
@@ -68,7 +77,6 @@ class Rediscloud extends ProviderPlug{
             }
         }
 
-		return $info;
-	}
-	
+        return $info;
+    }
 }

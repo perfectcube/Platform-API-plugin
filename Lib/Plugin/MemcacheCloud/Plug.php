@@ -1,24 +1,31 @@
 <?php 
 
 App::uses('ProviderPlug','Api.Lib');
+require_once (APP.'Vendor/ngharo/Random-PHP-Classes/Telnet.class.php');
 /**
 * Description
 */
 class MemcacheCloud extends ProviderPlug{
-	
+
+    private $server = '';
+    private $user = '';
+    private $pass = '';
+    private $host = '';
+    private $port = '';
+
  	public function check($options=''){
-		
-		$server = getenv('MEMCACHEDCLOUD_SERVERS');
-		$user = getenv('MEMCACHEDCLOUD_USERNAME');
-		$pass = getenv('MEMCACHEDCLOUD_PASSWORD');
-		$host = parse_url($server, PHP_URL_HOST);
-		$port = parse_url($server, PHP_URL_PORT);
+
+        $this->server = getenv('MEMCACHEDCLOUD_SERVERS');
+        $this->user = getenv('MEMCACHEDCLOUD_USERNAME');
+        $this->pass = getenv('MEMCACHEDCLOUD_PASSWORD');
+        $this->host = parse_url($this->server, PHP_URL_HOST);
+		$this->port = parse_url($this->server, PHP_URL_PORT);
 
 		// setup memcache connection
 		$Memcached = new Memcached();
 		$Memcached->setOption(Memcached::OPT_BINARY_PROTOCOL, true);
-		$Memcached->addServer($host, $port);
-		$Memcached->setSaslAuthData($user, $pass);
+		$Memcached->addServer($this->host, $this->port);
+		$Memcached->setSaslAuthData($this->user, $this->pass);
 		
 		// get the server status
 		$info['stats'] = $Memcached->getStats();
@@ -60,6 +67,8 @@ class MemcacheCloud extends ProviderPlug{
 		$this->logEvent(__('Store array value'),$event);
 		
 		$all_keys = $Memcached->getAllKeys();
+		// $keys = $this->getKeysSocket();
+        // $ip = $this->getKeysTelnet();
 		$event = $this->inspect($Memcached);
 		$this->logEvent(__('View all keys'),$event);
 		
@@ -126,7 +135,7 @@ class MemcacheCloud extends ProviderPlug{
 			);
 		}
 		
-		$this->appendLog($status);
+		$status['log'] = $this->log;
 		
 		return $status;
 		
@@ -205,5 +214,86 @@ class MemcacheCloud extends ProviderPlug{
 		// push the entry on the stack
         parent::logEvent($label,$event);
 	}
-	
+
+
+    private function getKeysSocket(){
+        $url = strtr('!user:!pass@!host',array(
+            '!host'=>$this->host,
+            '!pass'=>$this->pass,
+            '!user'=>$this->user,
+
+        ));
+
+        $mem = @fsockopen($url, $this->port,$errno,$errstr,30);
+        if ($mem === FALSE) return -1;
+
+        // retrieve distinct slab
+        $r = @fwrite($mem, 'stats items' . chr(10));
+        if ($r === FALSE) return -2;
+
+        $slab = array();
+        while (($l = @fgets($mem, 1024)) !== FALSE) {
+            // sortie ?
+            $l = trim($l);
+            if ($l == 'END') break;
+
+            $m = array();
+            // <STAT items:22:evicted_nonzero 0>
+            $r = preg_match('/^STAT\sitems\:(\d+)\:/', $l, $m);
+            if ($r != 1) return -3;
+            $a_slab = $m[1];
+
+            if (!array_key_exists($a_slab, $slab)) $slab[$a_slab] = array();
+        }
+
+        // recuperer les items
+        reset($slab);
+        foreach ($slab AS $a_slab_key => &$a_slab) {
+            $r = @fwrite($mem, 'stats cachedump ' . $a_slab_key . ' 100' . chr(10));
+            if ($r === FALSE) return -4;
+
+            while (($l = @fgets($mem, 1024)) !== FALSE) {
+                // sortie ?
+                $l = trim($l);
+                if ($l == 'END') break;
+
+                $m = array();
+                // ITEM 42 [118 b; 1354717302 s]
+                $r = preg_match('/^ITEM\s([^\s]+)\s/', $l, $m);
+                if ($r != 1) return -5;
+                $a_key = $m[1];
+
+                $a_slab[] = $a_key;
+            }
+        }
+
+        // close
+        @fclose($mem);
+        unset($mem);
+
+        // transform it;
+        $keys = array();
+        reset($slab);
+        foreach ($slab AS &$a_slab) {
+            reset($a_slab);
+            foreach ($a_slab AS &$a_key) $keys[] = $a_key;
+        }
+        unset($slab);
+
+        return $keys;
+    }
+
+	private function getKeysTelnet(){
+		$host = $this->host;
+		$port = '23';
+		$timeout = 30;
+		$prompt = '$';
+		$stream_timeout = 1;
+		$Telnet = new Telnet($host,$port,$timeout,$prompt,$stream_timeout);
+		// connect is handled by the constructor
+	    // $ip = $Telnet->connect();
+		return $Telnet;
+		
+	}
+
 }
