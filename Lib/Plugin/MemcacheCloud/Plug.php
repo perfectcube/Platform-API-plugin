@@ -1,11 +1,11 @@
-<?php 
+<?php
 
 App::uses('ProviderPlug','Api.Lib');
 require_once (APP.'Vendor/ngharo/Random-PHP-Classes/Telnet.class.php');
 /**
 * Description
 */
-class MemcacheCloud extends ProviderPlug{
+class MemcacheCloudPlug extends ProviderPlug{
 
     private $server = '';
     private $user = '';

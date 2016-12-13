@@ -1,10 +1,11 @@
 <?php 
 
 App::uses('ProviderPlug','Api.Lib');
+
 /**
 * Description
 */
-class Rediscloud extends ProviderPlug{
+class RedisCloudPlug extends ProviderPlug{
 	
  	public function check($options=''){
 		

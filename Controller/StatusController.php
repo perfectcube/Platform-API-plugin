@@ -45,8 +45,9 @@ class StatusController extends ApiAppController {
 		$requesting_provider = !empty($provider);
 		if($requesting_provider){
 			// try and load the providers plugin
-			$class = Inflector::classify($provider);
-			$file = 'Plugin/'.$class.'/Plug.php';
+			$folder = Inflector::classify($provider);
+            $class = $folder.'Plug';
+            $file = 'Plugin/'.$folder.'/Plug.php';
 			$plugin_path = $plug_root.'/'.$file;
 			// debug($file);
 			// debug($plug_root);

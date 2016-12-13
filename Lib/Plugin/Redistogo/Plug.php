@@ -1,10 +1,11 @@
 <?php 
 
 App::uses('ProviderPlug','Api.Lib');
+
 /**
 * Description
 */
-class Redistogo extends ProviderPlug{
+class RedistogoPlug extends ProviderPlug{
 	
  	public function check($options=''){
 		$redis = new Redis();
