@@ -1,11 +1,10 @@
 <?php 
 
 App::uses('ProviderPlug','Api.Lib');
-
 /**
 * Description
 */
-class SendGridPlug extends ProviderPlug{
+class SendGrid extends ProviderPlug{
 	
  	public function check($options=''){
 		
@@ -26,8 +25,12 @@ class SendGridPlug extends ProviderPlug{
 		$info = array(
 			'status' => $status,
 			'headers'=> $headers,
-			'response_headers' => $response_body,
+			'response_headers' => $headers, 
 		);
+
+		$entry = print_r($info,true);
+	    CakeLog::write('debug',$cake_log_message_prefix.$message_suffix.$entry);
+		error_log($error_log_message_prefix.$message_suffix.$entry);
 
         return $info;
     }
