@@ -4,10 +4,9 @@ App::uses('ProviderPlug','Api.Lib');
 /**
 * Description
 */
-class SendGrid extends ProviderPlug{
+class SendGridPlug extends ProviderPlug{
 	
  	public function check($options=''){
-		
 		// sendgrid test
 		$now = CakeTime::niceShort(time());
 		$from = new SendGrid\Email("PerfectPlan Debugger", "debug@proof.perfectplan.io");
@@ -25,13 +24,9 @@ class SendGrid extends ProviderPlug{
 		$info = array(
 			'status' => $status,
 			'headers'=> $headers,
-			'response_headers' => $headers, 
+			'response_body' => $response_body, 
 		);
 
-		$entry = print_r($info,true);
-	    CakeLog::write('debug',$cake_log_message_prefix.$message_suffix.$entry);
-		error_log($error_log_message_prefix.$message_suffix.$entry);
-
-        return $info;
-    }
+		return $info;
+	}
 }
