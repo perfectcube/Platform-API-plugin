@@ -9,13 +9,13 @@ class RedisLocalPlug extends ProviderPlug{
 	
  	public function check($options=''){
 		
-		$now = CakeTime::niceShort(time());
-		$event = array(
-			'now' => $now,  
-		);
-		$entry = print_r($event,true);
-	    CakeLog::write('debug',"CakeLog::write() wrote from api/status/check: ".$entry);
-		error_log("error_log() wrote from api/status/check: ".$entry);
+		// $now = CakeTime::niceShort(time());
+		// $event = array(
+		// 	'now' => $now,
+		// );
+		// $entry = print_r($event,true);
+		// 	    CakeLog::write('debug',"CakeLog::write() wrote from api/status/check: ".$entry);
+		// error_log("error_log() wrote from api/status/check: ".$entry);
 		
         // $options += array();
         // default to connection failure as info
